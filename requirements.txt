@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sounddevice
+whisper-openai
+numpy
+torch
+torchaudio
+soundfile
+git+https://github.com/facebookresearch/audiocraft.git
