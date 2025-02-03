@@ -1,9 +1,10 @@
-fastapi
-uvicorn
-sounddevice
-whisper-openai
-numpy
-torch
-torchaudio
-soundfile
+# requirements.txt
+fastapi==0.103.2
+uvicorn==0.23.2
+sounddevice==0.4.6
+whisper-openai==1.0.0
+numpy==1.26.0
+torch==2.1.0
+torchaudio==2.1.0
+soundfile==0.12.1
 git+https://github.com/facebookresearch/audiocraft.git

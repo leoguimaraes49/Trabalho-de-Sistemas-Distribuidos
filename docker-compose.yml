@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - speech_to_text
+      - music_generator
+
+  speech_to_text:
+    build:
+      context: .
+      dockerfile: agents/speech_to_text/Dockerfile
+    ports:
+      - "8001:8001"
+
+  music_generator:
+    build:
+      context: .
+      dockerfile: agents/music_generator/Dockerfile
+    ports:
+      - "8002:8002"
