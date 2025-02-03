@@ -1,7 +1,8 @@
 FROM python:3.9-slim
 
 # Instala dependências do sistema (FFmpeg para Whisper)
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg\
+git\
 
 WORKDIR /app
 
