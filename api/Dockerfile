@@ -1,17 +1,30 @@
 FROM python:3.9-slim
 
-# Instala dependências do sistema (FFmpeg para Whisper)
-RUN apt-get update && apt-get install -y ffmpeg\
-git\
+# Instala dependências do sistema
+RUN apt-get update && apt-get install -y \
+    git \
+    ffmpeg \
+    gcc \
+    g++ \
+    make \
+    python3-dev \
+    portaudio19-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copia o requirements.txt e instala as dependências
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copia o arquivo de dependências
+COPY requirements.txt /app/requirements.txt
 
-# Copia o código da API
+# Instala as dependências do Python
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Copia todo o código necessário para o contêiner
 COPY api /app/api
+COPY agents /app/agents
+
+# Define o caminho para o Python encontrar os módulos corretamente
+ENV PYTHONPATH=/app
 
 # Expõe a porta 8000
 EXPOSE 8000

@@ -7,4 +7,5 @@ numpy==1.26.0
 torch==2.1.0
 torchaudio==2.1.0
 soundfile==0.12.1
+wavio
 git+https://github.com/facebookresearch/audiocraft.git

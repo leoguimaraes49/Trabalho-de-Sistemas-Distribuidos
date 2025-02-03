@@ -1,9 +1,14 @@
 from audiocraft.models import MusicGen
 import torchaudio
 import warnings
+from fastapi import FastAPI
+
+app = FastAPI()
 
 warnings.filterwarnings("ignore")
-
+@app.get("/")
+def read_root():
+    return {"message": "Music Generator API is running!"}
 def gerar_musica(texto):
     try:
         print(f"\n🎹 GERANDO MÚSICA PARA: '{texto}'")

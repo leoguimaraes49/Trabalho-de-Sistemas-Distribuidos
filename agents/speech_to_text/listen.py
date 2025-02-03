@@ -3,6 +3,14 @@ import sounddevice as sd
 import numpy as np
 import wavio
 import os
+from fastapi import FastAPI
+
+app = FastAPI()
+
+# Exemplo de endpoint para teste
+@app.get("/")
+def read_root():
+    return {"message": "Speech-to-Text API is running!"}
 
 def gravar_e_transcrever_audio(duration=5, rate=44100):
     """Grava áudio e transcreve usando sua solução bem-sucedida"""
