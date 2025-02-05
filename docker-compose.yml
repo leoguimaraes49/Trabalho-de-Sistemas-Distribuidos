@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   api:
     build:
@@ -8,6 +10,11 @@ services:
     depends_on:
       - speech_to_text
       - music_generator
+    environment:
+      - SPEECH_TO_TEXT_URL=http://speech_to_text:8001
+      - MUSIC_GENERATOR_URL=http://music_generator:8002
+    networks:
+      - ai_network
 
   speech_to_text:
     build:
@@ -15,6 +22,8 @@ services:
       dockerfile: agents/speech_to_text/Dockerfile
     ports:
       - "8001:8001"
+    networks:
+      - ai_network
 
   music_generator:
     build:
@@ -22,3 +31,11 @@ services:
       dockerfile: agents/music_generator/Dockerfile
     ports:
       - "8002:8002"
+    volumes:
+      - ./output:/app/output
+    networks:
+      - ai_network
+
+networks:
+  ai_network:
+    driver: bridge

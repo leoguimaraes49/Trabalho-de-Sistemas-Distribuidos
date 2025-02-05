@@ -24,8 +24,9 @@ RUN pip install --no-cache-dir -U pip && \
 # Copia o código do serviço para dentro do contêiner
 COPY agents/speech_to_text /app/speech_to_text
 
-# Expõe a porta 8001 para comunicação
+# Expõe a porta 8001 para comunicação via API REST
 EXPOSE 8001
 
 # Define o comando de inicialização do FastAPI/Uvicorn
 CMD ["sh", "-c", "PYTHONPATH=/app uvicorn speech_to_text.listen:app --host 0.0.0.0 --port 8001"]
+

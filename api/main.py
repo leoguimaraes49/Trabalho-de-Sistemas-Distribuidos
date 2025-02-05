@@ -1,37 +1,42 @@
-
-from fastapi import FastAPI
-import uvicorn
-from agents.speech_to_text.listen import gravar_e_transcrever_audio
-from agents.music_generator.music import gerar_musica
+from fastapi import FastAPI, Query
+import requests
 import os
-import sys 
+import uvicorn
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ["XFORMERS_DISABLE"] = "1"  
+# URLs dos agentes (definidas no Docker Compose)
+SPEECH_TO_TEXT_URL = os.getenv("SPEECH_TO_TEXT_URL", "http://speech_to_text:8001")
+MUSIC_GENERATOR_URL = os.getenv("MUSIC_GENERATOR_URL", "http://music_generator:8002")
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"message": "API principal rodando!"}
+
 @app.get("/processar")
-def processar():
+def processar(texto: str = Query(None, description="Texto para geração de música")):
     try:
-        # 1. Gravação e transcrição
-        print("\n=== ETAPA 1: GRAVAÇÃO ===")
-        texto = gravar_e_transcrever_audio(duration=7)
+        # Se o texto não for enviado na requisição, chama o agente de fala
+        if not texto:
+            response = requests.get(f"{SPEECH_TO_TEXT_URL}/transcribe")
+            data = response.json()
+            texto = data.get("transcricao", "")
         
         if not texto:
             raise ValueError("Falha na transcrição: áudio vazio ou incompreensível")
-        
-        # Exibe o texto transcrito no terminal da API
-        print(f"\n🔍 TEXTO TRANSCRITO: {texto}\n")
-        
-        # 2. Geração de música
+
+        print(f"\n🔍 TEXTO RECEBIDO: {texto}\n")
+
+        # Envia para o agente gerador de música
         print("=== ETAPA 2: GERAÇÃO MUSICAL ===")
-        caminho_musica = gerar_musica(texto)
-        
+        response = requests.post(f"{MUSIC_GENERATOR_URL}/generate_music", json={"prompt": texto})
+        data = response.json()
+        caminho_musica = data.get("musica", "")
+
         return {
             "status": "sucesso",
             "musica": caminho_musica,
-            "texto": texto  # Texto incluído na resposta JSON
+            "texto": texto
         }
     
     except Exception as e:
