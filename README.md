@@ -41,7 +41,7 @@ Antes de executar o projeto, certifique-se de que possui os seguintes softwares 
 ## Instalação e Execução
 ### 1. Clonar o Repositório
 ```sh
-git clone [https://github.com/seu-usuario/projeto_cafe.git](https://github.com/leoguimaraes49/Trabalho-de-Sistemas-Distribuidos.git
+git clone https://github.com/leoguimaraes49/Trabalho-de-Sistemas-Distribuidos.git
 cd Trabalho-de-Sistemas-Distribuidos
 ```
 
