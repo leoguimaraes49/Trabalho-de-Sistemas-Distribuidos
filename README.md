@@ -29,10 +29,15 @@ projeto_cafe/
 
 ---
 
-## Requisitos
-Antes de executar o projeto, certifique-se de que possui os seguintes softwares instalados:
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+### 📌 **Requisitos**
+Para executar o projeto, você precisará do **Docker** e do **Docker Compose**. A instalação varia de acordo com o sistema operacional:
+
+- **Windows**: Recomendado instalar o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**, que já inclui o **Docker Compose**.
+- **Linux**: Instale o **Docker** e o **Docker Compose** manualmente com os seguintes comandos:
+
+  ```sh
+  sudo apt update && sudo apt install docker.io docker-compose -y
+
 - [Python 3.9+](https://www.python.org/downloads/)
 - Microfone (para testes de captação de áudio)
 
