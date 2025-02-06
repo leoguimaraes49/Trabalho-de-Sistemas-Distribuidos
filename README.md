@@ -106,6 +106,7 @@ curl -X POST "http://localhost:8001/transcribe/file" -F "audio=@audio.wav"
 curl -X GET "http://localhost:8001/transcribe?texto=Teste de transcrição"
 ```
 Esse comando não grava áudio, mas simula o envio de um texto diretamente.
+
 ---
 
 ### 🎵 **3. Testar o Agente de Música (Audiocraft)**
