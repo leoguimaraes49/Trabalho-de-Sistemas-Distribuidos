@@ -87,9 +87,11 @@ Abra o navegador e acesse:
 ---
 
 ### 🎤 **2. Testar o Agente de Fala (Whisper)**
+O agente de fala pode ser testado de três maneiras diferentes:
+
 #### 🛠️ **Gravar áudio e transcrever (via microfone)**
 ```sh
-curl -X GET "http://localhost:8001/transcribe/microphone?duration=5"
+curl -X GET "http://localhost:8001/transcribe/microphone"
 ```
 Esse comando grava 5 segundos de áudio e transcreve o texto.
 
@@ -99,12 +101,17 @@ curl -X POST "http://localhost:8001/transcribe/file" -F "audio=@audio.wav"
 ```
 > **Nota:** O arquivo `audio.wav` deve estar no mesmo diretório onde você executa o comando.
 
+#### 🛠️ **Entrada direta de texto (simulação de transcrição)**
+```sh
+curl -X GET "http://localhost:8001/transcribe?texto=Teste de transcrição"
+```
+Esse comando não grava áudio, mas simula o envio de um texto diretamente.
 ---
 
 ### 🎵 **3. Testar o Agente de Música (Audiocraft)**
 #### 🛠️ **Gerar música a partir de um texto**
 ```sh
-curl -X POST "http://localhost:8002/generate_music" -H "Content-Type: application/json" -d '{"prompt": "Uma melodia relaxante"}'
+curl -X POST "http://localhost:8002/generate_music" -H "Content-Type: application/json" -d '{"prompt": "Que café gostoso"}'
 ```
 O arquivo gerado será salvo em:
 ```
@@ -115,12 +122,19 @@ output/musica_gerada.wav
 
 ### 🎧 **4. Testar o Fluxo Completo da API**
 Agora podemos testar o sistema inteiro, **desde a fala até a geração da música**:
+
+1- Enviando um texto diretamente para gerar música
 ```sh
 curl -X GET "http://localhost:8000/processar?texto=Uma%20melodia%20suave"
 ```
-Se quiser testar enviando um **arquivo de áudio**:
+2- Se quiser testar enviando um **arquivo de áudio**:
 ```sh
-curl -X POST "http://localhost:8000/processar/file" -F "audio=@audio.wav"
+curl -X POST "http://localhost:8000/processar" -F "file=@audio.wav"
+```
+3- Gravação de áudio via microfone e geração de música:
+```sh
+curl -X POST "http://localhost:8000/processar"
+
 ```
 
 ---
