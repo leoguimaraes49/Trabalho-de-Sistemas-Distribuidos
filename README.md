@@ -1,15 +1,16 @@
 # Inteligência Artificial Distribuída aplicada à Cadeia Produtiva do Café
 
-## Descrição Geral
-Este projeto faz parte de um trabalho acadêmico focado no **desenvolvimento de uma solução de inteligência artificial distribuída aplicada à cadeia produtiva do café**. Ele envolve a criação de uma API REST que interage com dois agentes inteligentes distintos, responsáveis por:
-- **Agente de Fala:** Capta áudio e o transcreve para texto.
-- **Agente Gerador de Música:** Gera uma música baseada no texto recebido.
+## 📌 Descrição Geral
+Este projeto faz parte de um trabalho acadêmico focado no **desenvolvimento de uma solução de inteligência artificial distribuída aplicada à cadeia produtiva do café**. Ele envolve a criação de uma **API REST** que interage com dois agentes inteligentes distintos:
 
-Todos os agentes estão contidos em containers Docker, garantindo modularidade e escalabilidade da solução.
+- **🎤 Agente de Fala:** Capta áudio do microfone ou recebe um arquivo de áudio e transcreve para texto usando **Whisper**.
+- **🎵 Agente Gerador de Música:** Utiliza o modelo **Audiocraft (MusicGen)** para gerar uma música baseada no texto transcrito.
+
+Todos os agentes estão contidos em containers **Docker**, garantindo modularidade e escalabilidade da solução.
 
 ---
 
-## Estrutura do Projeto
+## 📚 Estrutura do Projeto
 ```
 projeto_cafe/
 ├── api/
@@ -17,10 +18,10 @@ projeto_cafe/
 │   ├── Dockerfile  # Configuração Docker da API
 ├── agents/
 │   ├── speech_to_text/  # Agente de Fala
-│   │   ├── listen.py  # Módulo de transcrição de áudio
+│   │   ├── listen.py  # Módulo de transcrição de áudio (microfone e upload)
 │   │   ├── Dockerfile  # Configuração Docker do agente
 │   ├── music_generator/  # Agente de Geração de Música
-│   │   ├── music.py  # Módulo de geração de música
+│   │   ├── music.py  # Módulo de geração de música usando Audiocraft
 │   │   ├── Dockerfile  # Configuração Docker do agente
 ├── docker-compose.yml  # Orquestração dos containers
 ├── requirements.txt  # Dependências do projeto
@@ -29,6 +30,7 @@ projeto_cafe/
 
 ---
 
+<<<<<<< Updated upstream
 ### 📌 **Requisitos**
 Para executar o projeto, você precisará do **Docker** e do **Docker Compose**. A instalação varia de acordo com o sistema operacional:
 
@@ -40,119 +42,129 @@ Para executar o projeto, você precisará do **Docker** e do **Docker Compose**.
 
 - [Python 3.9+](https://www.python.org/downloads/)
 - Microfone (para testes de captação de áudio)
+=======
+## ✅ Requisitos
+Antes de executar o projeto, certifique-se de ter os seguintes softwares instalados:
+
+- **Se estiver no Windows**: Instale o **Docker Desktop**
+- **Se estiver no Linux**: Instale **Docker** e **Docker Compose**
+- **Python 3.9+**
+- **Microfone** (caso queira testar a captação de áudio ao vivo)
+- **Modelo de IA**:
+  - [Whisper](https://github.com/openai/whisper) (transcrição de áudio)
+  - [Audiocraft - MusicGen](https://github.com/facebookresearch/audiocraft) (geração musical)
+>>>>>>> Stashed changes
 
 ---
 
-## Instalação e Execução
-### 1. Clonar o Repositório
+## 🚀 Instalação e Execução
+
+### 1️⃣ Clonar o Repositório
 ```sh
 git clone https://github.com/leoguimaraes49/Trabalho-de-Sistemas-Distribuidos.git
 cd Trabalho-de-Sistemas-Distribuidos
 ```
 
-### 2. Construir e Executar os Containers
-Para inicializar todo o ambiente:
+### 2️⃣ Construir e Executar os Containers
+Para **construir e rodar** todos os serviços:
 ```sh
 docker-compose up --build
 ```
-Esse comando:
-- **Constrói** as imagens Docker.
-- **Inicializa** os containers da API e dos agentes.
-
-Se quiser rodar os containers em background:
+Se quiser rodar os containers em **background**:
 ```sh
 docker-compose up -d
 ```
 
-### 3. Testar os Componentes
-#### **Verificar se os agentes estão rodando**
+---
+
+## 🔎 Testando a API
+
+### 📌 **1. Verificar se os agentes estão rodando**
 Abra o navegador e acesse:
 - **API principal:** [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Agente de Fala:** [http://localhost:8001](http://localhost:8001)
 - **Agente de Música:** [http://localhost:8002](http://localhost:8002)
 
-#### **Gerar música diretamente**
-Envie um comando para o agente de música:
+---
+
+### 🎤 **2. Testar o Agente de Fala (Whisper)**
+#### 🛠️ **Gravar áudio e transcrever (via microfone)**
+```sh
+curl -X GET "http://localhost:8001/transcribe/microphone?duration=5"
+```
+Esse comando grava 5 segundos de áudio e transcreve o texto.
+
+#### 🛠️ **Enviar um arquivo de áudio para transcrição**
+```sh
+curl -X POST "http://localhost:8001/transcribe/file" -F "audio=@audio.wav"
+```
+> **Nota:** O arquivo `audio.wav` deve estar no mesmo diretório onde você executa o comando.
+
+---
+
+### 🎵 **3. Testar o Agente de Música (Audiocraft)**
+#### 🛠️ **Gerar música a partir de um texto**
 ```sh
 curl -X POST "http://localhost:8002/generate_music" -H "Content-Type: application/json" -d '{"prompt": "Uma melodia relaxante"}'
 ```
+O arquivo gerado será salvo em:
+```
+output/musica_gerada.wav
+```
 
-#### **Testar a API completa**
-Envie um texto para a API principal gerar a música correspondente:
+---
+
+### 🎧 **4. Testar o Fluxo Completo da API**
+Agora podemos testar o sistema inteiro, **desde a fala até a geração da música**:
 ```sh
 curl -X GET "http://localhost:8000/processar?texto=Uma%20melodia%20suave"
 ```
+Se quiser testar enviando um **arquivo de áudio**:
+```sh
+curl -X POST "http://localhost:8000/processar/file" -F "audio=@audio.wav"
+```
 
 ---
 
-## Detalhes dos Containers
-### **API (porta 8000)**
-Responsável por:
-- Coordenar os agentes
-- Receber solicitações REST
-- Encaminhar o texto recebido ao gerador de música
-
-### **Agente de Fala (porta 8001)**
-Capta áudio do microfone e o converte em texto.
-Pode ser chamado diretamente via:
-```sh
-curl -X GET "http://localhost:8001"
-```
-
-### **Agente Gerador de Música (porta 8002)**
-Recebe um texto e gera uma música baseada nele.
-Pode ser testado via:
-```sh
-curl -X POST "http://localhost:8002/generate_music" -H "Content-Type: application/json" -d '{"prompt": "Jazz animado"}'
-```
-O arquivo gerado será salvo em `output/musica_gerada.wav`.
-
----
-
-## Encerrando o Projeto
-Para parar os containers sem removê-los:
+## 🛠️ Encerrando o Projeto
+Para **parar os containers sem removê-los**:
 ```sh
 docker-compose down
 ```
-Se quiser excluir todos os containers e volumes:
+Se quiser excluir **todos os containers e volumes**:
 ```sh
 docker-compose down -v
 ```
 
 ---
 
-## Possíveis Erros e Soluções
-### 1. **Erro: Porta já em uso**
-Se alguma porta estiver ocupada, altere a exposição no `docker-compose.yml`.
+## 🚨 Possíveis Erros e Soluções
 
-### 2. **Erro de acesso ao microfone**
-- No **Windows**, verifique as permissões em `Configurações > Privacidade > Microfone`.
-- No **Linux**, rode com `--device /dev/snd` no `docker-compose.yml`.
+### ❌ **1. Erro: Porta já em uso**
+Se alguma porta estiver ocupada, altere as portas no `docker-compose.yml`.
 
-### 3. **Erro: Espaço em disco do Docker esgotado**
-Execute:
-```sh
-docker system prune -a -f
-```
-Isso remove imagens, containers e volumes não utilizados.
+### ❌ **2. Erro de acesso ao microfone**
+- No **Windows**, verifique se o Docker tem permissão para acessar o microfone em:
+  **Configurações > Privacidade > Microfone**.
+
+### ❌ **3. Erro: Falha na Transcrição**
+Se o Whisper não conseguir transcrever:
+- Teste com um áudio de melhor qualidade.
+- Certifique-se de que o modelo Whisper foi baixado corretamente.
 
 ---
 
-## Contribuição
+## 💪 Contribuição
 1. **Fork** o repositório.
 2. Crie uma **branch**: `git checkout -b minha-feature`
-3. Commit: `git commit -m 'Minha contribuição'`
-4. Push: `git push origin minha-feature`
-5. Envie um **Pull Request**!
+3. Envie um **Pull Request**! 🚀
 
 ---
 
-## Licença
-Este projeto é de uso acadêmico e segue os termos definidos pela instituição.
+## 📜 Licença
+Este projeto foi desenvolvido para fins acadêmicos.
 
----
 
-Desenvolvido para a disciplina de **Sistemas Distribuídos**. 🚀
 
 
 
