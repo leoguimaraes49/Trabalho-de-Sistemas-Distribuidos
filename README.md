@@ -30,7 +30,6 @@ projeto_cafe/
 
 ---
 
-<<<<<<< Updated upstream
 ### 📌 **Requisitos**
 Para executar o projeto, você precisará do **Docker** e do **Docker Compose**. A instalação varia de acordo com o sistema operacional:
 
