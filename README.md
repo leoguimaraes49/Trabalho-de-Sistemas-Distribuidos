@@ -49,11 +49,7 @@ Antes de executar o projeto, certifique-se de ter os seguintes softwares instala
 - **Se estiver no Linux**: Instale **Docker** e **Docker Compose**
 - **Python 3.9+**
 - **Microfone** (caso queira testar a captação de áudio ao vivo)
-- **Modelo de IA**:
-  - [Whisper](https://github.com/openai/whisper) (transcrição de áudio)
-  - [Audiocraft - MusicGen](https://github.com/facebookresearch/audiocraft) (geração musical)
->>>>>>> Stashed changes
-
+  
 ---
 
 ## 🚀 Instalação e Execução
