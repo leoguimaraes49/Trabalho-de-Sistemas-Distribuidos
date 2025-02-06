@@ -41,14 +41,6 @@ Para executar o projeto, você precisará do **Docker** e do **Docker Compose**.
 
 - [Python 3.9+](https://www.python.org/downloads/)
 - Microfone (para testes de captação de áudio)
-=======
-## ✅ Requisitos
-Antes de executar o projeto, certifique-se de ter os seguintes softwares instalados:
-
-- **Se estiver no Windows**: Instale o **Docker Desktop**
-- **Se estiver no Linux**: Instale **Docker** e **Docker Compose**
-- **Python 3.9+**
-- **Microfone** (caso queira testar a captação de áudio ao vivo)
   
 ---
 
