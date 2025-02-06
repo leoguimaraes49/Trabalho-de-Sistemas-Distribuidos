@@ -1,1 +1,34 @@
-Listening/listeningEnv
+# Arquivos do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.txt
+# Diretório de dependências do ambiente virtual
+venv/
+.env
+*.env
+
+# Configurações de IDEs
+.vscode/
+.idea/
+*.swp
+
+# Arquivos do Docker
+output/
+docker-compose.override.yml
+
+# Arquivos de logs e cache
+*.log
+*.sqlite3
+db.sqlite3
+*.db
+
+# Arquivos gerados pelo sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de áudio gerados
+*.wav
+*.mp3
+*.ogg
