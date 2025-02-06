@@ -71,7 +71,7 @@ docker-compose up --build
 ```
 Se quiser rodar os containers em **background**:
 ```sh
-docker-compose up -d
+docker-compose up 
 ```
 
 ---
