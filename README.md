@@ -114,7 +114,7 @@ Agora podemos testar o sistema inteiro, **desde a fala até a geração da músi
 
 1- Enviando um texto diretamente para gerar música
 ```sh
-curl -X GET "http://localhost:8000/processar?texto=Uma%20melodia%20suave"
+curl -X POST "http://localhost:8000/processar?texto=Uma%20melodia%20suave"
 ```
 2- Se quiser testar enviando um **arquivo de áudio**:
 ```sh
