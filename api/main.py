@@ -12,14 +12,14 @@ def read_root():
     return {"message": "API Principal rodando!"}
 
 @app.post("/processar")
-async def processar_texto(texto: str = Query(None, description="Texto para geração de música"), audio: UploadFile = File(None)):
+async def processar(texto: str = None, file: UploadFile = None):
     try:
         transcricao = texto
 
-        # Caso um arquivo de áudio seja enviado, faz a transcrição
-        if audio:
+        # Se um arquivo for enviado, faz a transcrição primeiro
+        if file:
             print("\n🎤 Enviando arquivo para transcrição...")
-            files = {"audio": (audio.filename, audio.file, audio.content_type)}
+            files = {"audio": (file.filename, file.file, file.content_type)}
             response = requests.post(f"{SPEECH_TO_TEXT_URL}/file", files=files)
 
             if response.status_code == 200:
@@ -32,7 +32,7 @@ async def processar_texto(texto: str = Query(None, description="Texto para gera�
 
         print(f"\n🔍 TEXTO PROCESSADO: {transcricao}")
 
-        # Envia o texto transcrito ou o texto inserido para a geração de música
+        # Envia o texto para a geração de música
         response = requests.post(MUSIC_GENERATOR_URL, json={"prompt": transcricao})
 
         if response.status_code == 200:
