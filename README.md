@@ -13,7 +13,7 @@ Texto ────────────────────────�
              HTTP :8001                     :8000              HTTP :8002
 ```
 
-A API recebe texto ou arquivo de áudio. Quando recebe arquivo, solicita a transcrição ao serviço de fala e envia o texto ao serviço musical. O serviço musical usa `facebook/musicgen-small`, solicita 10 segundos de áudio e grava `musica_gerada.wav`. No Compose, o diretório `/app/output` desse serviço está mapeado para `./output` no computador anfitrião.
+A API recebe texto ou arquivo de áudio. Quando recebe arquivo, solicita a transcrição ao serviço de fala e envia o texto ao serviço musical. O serviço musical usa `facebook/musicgen-small`, solicita 10 segundos de áudio e grava um arquivo WAV com nome único. No Compose, o diretório `/app/output` desse serviço está mapeado para `./output` no computador anfitrião.
 
 O serviço de fala também contém uma rota própria para captação pelo microfone; a rota principal `/processar` aceita texto ou arquivo e não aciona essa captação diretamente.
 
@@ -52,7 +52,9 @@ Os serviços expõem suas interfaces OpenAPI em:
 | Transcrição | http://localhost:8001/docs |
 | Geração musical | http://localhost:8002/docs |
 
-Para encerrar os serviços, execute `docker compose down` em outro terminal. O diretório local `output` contém a saída mapeada; novas gerações usam o mesmo nome de arquivo e podem sobrescrever a anterior.
+Para encerrar os serviços, execute `docker compose down` em outro terminal. O diretório local `output` contém a saída mapeada; cada geração recebe um nome diferente para evitar sobrescrever arquivos anteriores.
+
+As variáveis `SPEECH_TO_TEXT_URL` e `MUSIC_GENERATOR_URL` configuram os endereços base dos serviços na API. Os valores padrão funcionam na rede do Compose. A API utiliza timeout de conexão de 5 segundos e de leitura de 600 segundos; falhas de comunicação ou respostas inválidas são informadas com HTTP 502.
 
 ## Exemplos de requisição
 
@@ -77,12 +79,22 @@ curl -X POST 'http://localhost:8002/generate_music' -H 'Content-Type: applicatio
 
 A rota `GET /transcribe/microphone` pertence ao serviço de transcrição e depende de acesso a um dispositivo de áudio no ambiente onde ele roda. Esse acesso não está configurado explicitamente no Compose; a disponibilidade varia conforme o ambiente.
 
+## Testes do fluxo
+
+Os testes usam respostas e modelos simulados, sem baixar ou executar Whisper e MusicGen. Para executá-los em um ambiente virtual com Python 3.9 ou superior:
+
+```bash
+pip install fastapi==0.103.2 httpx==0.27.2 requests==2.32.5 python-multipart==0.0.20
+python -m unittest discover -s tests -v
+```
+
+Eles cobrem o encaminhamento de texto e áudio, falhas dos serviços, limpeza de arquivos temporários e nomes diferentes para saídas musicais. A validação dos modelos reais requer a execução com as dependências completas.
+
 ## Limitações e pontos para evolução
 
 - A construção e a execução ponta a ponta não foram verificadas nesta revisão. As dependências incluem uma instalação do AudioCraft diretamente de um repositório Git; versões, recursos e downloads de modelos podem afetar a reprodução.
 - Os modelos são carregados dentro das requisições, o que pode aumentar a latência e o consumo de recursos.
-- A API principal utiliza endereços de serviços definidos no código; alterar apenas as variáveis de ambiente declaradas no Compose não muda esses endereços.
-- O projeto não demonstra autenticação nem isolamento para uso público. O fluxo grava arquivos e registra texto processado em logs; use dados de teste e avalie privacidade e segurança antes de expô-lo.
+- O projeto não demonstra autenticação nem isolamento para uso público. O fluxo recebe áudio e grava arquivos; use dados de teste e avalie privacidade e segurança antes de expô-lo. Não há limites de tamanho de upload nem autenticação.
 
 ## Documentação acadêmica
 

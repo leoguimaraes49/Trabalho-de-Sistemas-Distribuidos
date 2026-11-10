@@ -1,53 +1,65 @@
-from fastapi import FastAPI, Query, UploadFile, File, HTTPException
+import logging
+import os
+
 import requests
+from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
-# Endereços dos serviços
-SPEECH_TO_TEXT_URL = "http://speech_to_text:8001/transcribe"
-MUSIC_GENERATOR_URL = "http://music_generator:8002/generate_music"
+
+def _url_servico(variavel: str, padrao: str, rota: str) -> str:
+    return f"{os.getenv(variavel, padrao).rstrip('/')}/{rota.lstrip('/')}"
+
+
+def _chamar_servico(url: str, **kwargs) -> dict:
+    try:
+        response = requests.post(url, timeout=(5, 600), **kwargs)
+        response.raise_for_status()
+        resultado = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        logger.warning("Falha na comunicação com serviço: %s", type(exc).__name__)
+        raise HTTPException(status_code=502, detail="Falha na comunicação com um serviço de áudio") from exc
+
+    if not isinstance(resultado, dict) or resultado.get("status") != "sucesso":
+        raise HTTPException(status_code=502, detail="O serviço de áudio não concluiu a operação")
+    return resultado
+
 
 @app.get("/")
 def read_root():
     return {"message": "API Principal rodando!"}
 
+
 @app.post("/processar")
 async def processar(texto: str = None, file: UploadFile = None):
-    try:
-        transcricao = texto
+    transcricao = (texto or "").strip()
 
-        # Se um arquivo for enviado, faz a transcrição primeiro
-        if file:
-            print("\n🎤 Enviando arquivo para transcrição...")
-            files = {"audio": (file.filename, file.file, file.content_type)}
-            response = requests.post(f"{SPEECH_TO_TEXT_URL}/file", files=files)
+    if file:
+        url = _url_servico("SPEECH_TO_TEXT_URL", "http://speech_to_text:8001", "/transcribe/file")
+        resultado = await run_in_threadpool(
+            _chamar_servico,
+            url,
+            files={"audio": (file.filename, file.file, file.content_type)},
+        )
+        transcricao = resultado.get("transcricao")
+        if not isinstance(transcricao, str) or not transcricao.strip():
+            raise HTTPException(status_code=502, detail="O serviço não retornou uma transcrição válida")
+        transcricao = transcricao.strip()
 
-            if response.status_code == 200:
-                transcricao = response.json().get("transcricao", "").strip()
-            else:
-                raise HTTPException(status_code=500, detail=f"Erro na transcrição: {response.json()}")
+    if not transcricao:
+        raise HTTPException(status_code=400, detail="Informe um texto ou envie um áudio")
 
-        if not transcricao:
-            raise HTTPException(status_code=400, detail="Falha na transcrição: áudio vazio ou incompreensível")
+    url = _url_servico("MUSIC_GENERATOR_URL", "http://music_generator:8002", "/generate_music")
+    resultado = await run_in_threadpool(_chamar_servico, url, json={"prompt": transcricao})
+    caminho = resultado.get("musica")
+    if not isinstance(caminho, str) or not caminho.strip():
+        raise HTTPException(status_code=502, detail="O serviço não retornou um arquivo de música")
 
-        print(f"\n🔍 TEXTO PROCESSADO: {transcricao}")
+    return {"status": "sucesso", "musica": caminho, "texto": transcricao}
 
-        # Envia o texto para a geração de música
-        response = requests.post(MUSIC_GENERATOR_URL, json={"prompt": transcricao})
-
-        if response.status_code == 200:
-            caminho_musica = response.json().get("musica", "Erro ao gerar música")
-        else:
-            raise HTTPException(status_code=500, detail=f"Erro na geração musical: {response.json()}")
-
-        return {"status": "sucesso", "musica": caminho_musica, "texto": transcricao}
-
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-

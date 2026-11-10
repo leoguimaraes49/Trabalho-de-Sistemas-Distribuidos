@@ -9,3 +9,5 @@ torchaudio==2.1.0
 soundfile==0.12.1
 wavio
 git+https://github.com/facebookresearch/audiocraft.git
+requests==2.32.5
+python-multipart==0.0.20
