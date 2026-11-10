@@ -1,42 +1,41 @@
-from audiocraft.models import MusicGen
-import torchaudio
-import warnings
-from fastapi import FastAPI
-from pydantic import BaseModel
+import logging
 import os
+from uuid import uuid4
+
+import torchaudio
+from audiocraft.models import MusicGen
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
-warnings.filterwarnings("ignore")
+logger = logging.getLogger(__name__)
 
-# Modelo para a entrada da API
+
 class MusicRequest(BaseModel):
     prompt: str
+
 
 @app.get("/")
 def read_root():
     return {"message": "Agente de música rodando!"}
 
+
 @app.post("/generate_music")
 def generate_music(request: MusicRequest):
-    try:
-        texto = request.prompt
-        print(f"\n🎹 GERANDO MÚSICA PARA: '{texto}'")
+    texto = request.prompt.strip()
+    if not texto:
+        raise HTTPException(status_code=400, detail="Informe um texto para gerar música")
 
-        # Carrega o modelo e gera música
+    try:
         model = MusicGen.get_pretrained("facebook/musicgen-small")
         model.set_generation_params(duration=10)
         audio_tensor = model.generate([texto])
 
-        # Define o caminho para salvar o arquivo
         output_dir = "/app/output"
         os.makedirs(output_dir, exist_ok=True)
-        output_path = f"{output_dir}/musica_gerada.wav"
-
+        output_path = os.path.join(output_dir, f"musica_{uuid4().hex}.wav")
         torchaudio.save(output_path, audio_tensor[0].cpu(), 32000)
-        print("✅ Música gerada com sucesso!")
-
         return {"status": "sucesso", "musica": output_path}
-
-    except Exception as e:
-        print(f"❌ Erro na geração: {str(e)}")
-        return {"status": "erro", "detalhes": str(e)}
+    except Exception as exc:
+        logger.exception("Falha ao gerar música")
+        raise HTTPException(status_code=500, detail="Falha ao gerar música") from exc
