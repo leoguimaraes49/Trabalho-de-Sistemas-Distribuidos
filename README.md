@@ -1,172 +1,89 @@
-# Inteligência Artificial Distribuída aplicada à Cadeia Produtiva do Café
+# IA distribuída para transcrição de áudio e geração de música
 
-## 📌 Descrição Geral
-Este projeto faz parte de um trabalho acadêmico focado no **desenvolvimento de uma solução de inteligência artificial distribuída aplicada à cadeia produtiva do café**. Ele envolve a criação de uma **API REST** que interage com dois agentes inteligentes distintos:
+Protótipo acadêmico de sistemas distribuídos, desenvolvido no contexto da cadeia produtiva do café. O repositório reúne três serviços Python: uma API que coordena o fluxo, um serviço de transcrição de áudio com Whisper e outro de geração musical com MusicGen. Os serviços se comunicam por HTTP e são definidos no Docker Compose.
 
-- **🎤 Agente de Fala:** Capta áudio do microfone ou recebe um arquivo de áudio e transcreve para texto usando **Whisper**.
-- **🎵 Agente Gerador de Música:** Utiliza o modelo **Audiocraft (MusicGen)** para gerar uma música baseada no texto transcrito.
+> Estado do projeto: protótipo acadêmico. Os comandos abaixo descrevem a configuração e as rotas presentes no código; a execução completa e a compatibilidade das dependências precisam ser validadas no ambiente de destino.
 
-Todos os agentes estão contidos em containers **Docker**, garantindo modularidade e escalabilidade da solução.
+## Como funciona
 
----
-
-## 📚 Estrutura do Projeto
-```
-projeto_cafe/
-├── api/
-│   ├── main.py  # API principal
-│   ├── Dockerfile  # Configuração Docker da API
-├── agents/
-│   ├── speech_to_text/  # Agente de Fala
-│   │   ├── listen.py  # Módulo de transcrição de áudio (microfone e upload)
-│   │   ├── Dockerfile  # Configuração Docker do agente
-│   ├── music_generator/  # Agente de Geração de Música
-│   │   ├── music.py  # Módulo de geração de música usando Audiocraft
-│   │   ├── Dockerfile  # Configuração Docker do agente
-├── docker-compose.yml  # Orquestração dos containers
-├── requirements.txt  # Dependências do projeto
-└── README.md  # Documentação do projeto
+```text
+Texto ───────────────────────────────────────┐
+                                              v
+Áudio ──> serviço de transcrição (Whisper) ──> API ──> serviço de música (MusicGen) ──> arquivo WAV
+             HTTP :8001                     :8000              HTTP :8002
 ```
 
----
+A API recebe texto ou arquivo de áudio. Quando recebe arquivo, solicita a transcrição ao serviço de fala e envia o texto ao serviço musical. O serviço musical usa `facebook/musicgen-small`, solicita 10 segundos de áudio e grava `musica_gerada.wav`. No Compose, o diretório `/app/output` desse serviço está mapeado para `./output` no computador anfitrião.
 
-### 📌 **Requisitos**
-Para executar o projeto, você precisará do **Docker** e do **Docker Compose**. A instalação varia de acordo com o sistema operacional:
+O serviço de fala também contém uma rota própria para captação pelo microfone; a rota principal `/processar` aceita texto ou arquivo e não aciona essa captação diretamente.
 
-- **Windows**: Recomendado instalar o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**, que já inclui o **Docker Compose**.
-- **Linux**: Instale o **Docker** e o **Docker Compose** manualmente com os seguintes comandos:
+## Tecnologias e estrutura
 
-  ```sh
-  sudo apt update && sudo apt install docker.io docker-compose -y
+- Python 3.9, FastAPI e Uvicorn para os serviços HTTP.
+- Whisper para transcrição; AudioCraft/MusicGen, PyTorch e torchaudio para geração musical.
+- Docker e Docker Compose para definir os serviços e a rede.
 
-- [Python 3.9+](https://www.python.org/downloads/)
-- Microfone (para testes de captação de áudio)
-  
----
+```text
+api/                       API coordenadora e Dockerfile
+agents/speech_to_text/     Serviço de transcrição e Dockerfile
+agents/music_generator/    Serviço de geração musical e Dockerfile
+docker-compose.yml         Serviços, portas, rede e volume
+requirements.txt           Dependências Python
+Relatórios/                Documentos acadêmicos do projeto
+```
 
-## 🚀 Instalação e Execução
+## Execução com Docker
 
-### 1️⃣ Clonar o Repositório
-```sh
+Pré-requisitos: Docker com Compose, acesso à rede para instalar dependências e obter modelos, espaço em disco e recursos de processamento adequados. As portas `8000`, `8001` e `8002` devem estar disponíveis.
+
+Na raiz do repositório:
+
+```bash
 git clone https://github.com/leoguimaraes49/Trabalho-de-Sistemas-Distribuidos.git
 cd Trabalho-de-Sistemas-Distribuidos
+docker compose up --build
 ```
 
-### 2️⃣ Construir e Executar os Containers
-Para **construir e rodar** todos os serviços:
-```sh
-docker-compose up --build
-```
-Se quiser rodar os containers em **background**:
-```sh
-docker-compose up 
-```
+Os serviços expõem suas interfaces OpenAPI em:
 
----
+| Serviço | Interface |
+| --- | --- |
+| API coordenadora | http://localhost:8000/docs |
+| Transcrição | http://localhost:8001/docs |
+| Geração musical | http://localhost:8002/docs |
 
-## 🔎 Testando a API
+Para encerrar os serviços, execute `docker compose down` em outro terminal. O diretório local `output` contém a saída mapeada; novas gerações usam o mesmo nome de arquivo e podem sobrescrever a anterior.
 
-### 📌 **1. Verificar se os agentes estão rodando**
-Abra o navegador e acesse:
-- **API principal:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Agente de Fala:** [http://localhost:8001](http://localhost:8001)
-- **Agente de Música:** [http://localhost:8002](http://localhost:8002)
+## Exemplos de requisição
 
----
+Os exemplos usam `curl`. O primeiro envia texto à API coordenadora:
 
-### 🎤 **2. Testar o Agente de Fala (Whisper)**
-O agente de fala pode ser testado de três maneiras diferentes:
-
-#### 🛠️ **Gravar áudio e transcrever (via microfone)**
-```sh
-curl -X GET "http://localhost:8001/transcribe/microphone"
-```
-Esse comando grava 5 segundos de áudio e transcreve o texto.
-
-#### 🛠️ **Enviar um arquivo de áudio para transcrição**
-```sh
-curl -X POST "http://localhost:8001/transcribe/file" -F "audio=@audio.wav"
-```
-> **Nota:** O arquivo `audio.wav` deve estar no mesmo diretório onde você executa o comando.
-
-#### 🛠️ **Entrada direta de texto (simulação de transcrição)**
-```sh
-curl -X GET "http://localhost:8001/transcribe?texto=Teste de transcrição"
-```
-Esse comando não grava áudio, mas simula o envio de um texto diretamente.
-
----
-
-### 🎵 **3. Testar o Agente de Música (Audiocraft)**
-#### 🛠️ **Gerar música a partir de um texto**
-```sh
-curl -X POST "http://localhost:8002/generate_music" -H "Content-Type: application/json" -d '{"prompt": "Que café gostoso"}'
-```
-O arquivo gerado será salvo em:
-```
-output/musica_gerada.wav
+```bash
+curl -X POST 'http://localhost:8000/processar?texto=Uma%20melodia%20suave'
 ```
 
----
+Para enviar um arquivo de áudio à API, substitua `audio.wav` por um arquivo local:
 
-### 🎧 **4. Testar o Fluxo Completo da API**
-Agora podemos testar o sistema inteiro, **desde a fala até a geração da música**:
-
-1- Enviando um texto diretamente para gerar música
-```sh
-curl -X POST "http://localhost:8000/processar?texto=Uma%20melodia%20suave"
-```
-2- Se quiser testar enviando um **arquivo de áudio**:
-```sh
-curl -X POST "http://localhost:8000/processar" -F "file=@audio.wav"
-```
-3- Gravação de áudio via microfone e geração de música:
-```sh
-curl -X POST "http://localhost:8000/processar"
-
+```bash
+curl -X POST 'http://localhost:8000/processar' -F 'file=@audio.wav'
 ```
 
----
+Para chamar os serviços diretamente:
 
-## 🛠️ Encerrando o Projeto
-Para **parar os containers sem removê-los**:
-```sh
-docker-compose down
-```
-Se quiser excluir **todos os containers e volumes**:
-```sh
-docker-compose down -v
+```bash
+curl -X POST 'http://localhost:8001/transcribe/file' -F 'audio=@audio.wav'
+curl -X POST 'http://localhost:8002/generate_music' -H 'Content-Type: application/json' -d '{"prompt":"Uma melodia suave"}'
 ```
 
----
+A rota `GET /transcribe/microphone` pertence ao serviço de transcrição e depende de acesso a um dispositivo de áudio no ambiente onde ele roda. Esse acesso não está configurado explicitamente no Compose; a disponibilidade varia conforme o ambiente.
 
-## 🚨 Possíveis Erros e Soluções
+## Limitações e pontos para evolução
 
-### ❌ **1. Erro: Porta já em uso**
-Se alguma porta estiver ocupada, altere as portas no `docker-compose.yml`.
+- A construção e a execução ponta a ponta não foram verificadas nesta revisão. As dependências incluem uma instalação do AudioCraft diretamente de um repositório Git; versões, recursos e downloads de modelos podem afetar a reprodução.
+- Os modelos são carregados dentro das requisições, o que pode aumentar a latência e o consumo de recursos.
+- A API principal utiliza endereços de serviços definidos no código; alterar apenas as variáveis de ambiente declaradas no Compose não muda esses endereços.
+- O projeto não demonstra autenticação nem isolamento para uso público. O fluxo grava arquivos e registra texto processado em logs; use dados de teste e avalie privacidade e segurança antes de expô-lo.
 
-### ❌ **2. Erro de acesso ao microfone**
-- No **Windows**, verifique se o Docker tem permissão para acessar o microfone em:
-  **Configurações > Privacidade > Microfone**.
+## Documentação acadêmica
 
-### ❌ **3. Erro: Falha na Transcrição**
-Se o Whisper não conseguir transcrever:
-- Teste com um áudio de melhor qualidade.
-- Certifique-se de que o modelo Whisper foi baixado corretamente.
-
----
-
-## 💪 Contribuição
-1. **Fork** o repositório.
-2. Crie uma **branch**: `git checkout -b minha-feature`
-3. Envie um **Pull Request**! 🚀
-
----
-
-## 📜 Licença
-Este projeto foi desenvolvido para fins acadêmicos.
-
-
-
-
-
+Os relatórios disponíveis estão no diretório [Relatórios](Relat%C3%B3rios/). O repositório foi desenvolvido para fins acadêmicos.
